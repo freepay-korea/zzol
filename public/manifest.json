@@ -1,6 +1,6 @@
 {
-  "name": "쫄! - 광고 없는 친구 내기 앱",
-  "short_name": "쫄!",
+  "name": "쫄? - 광고 없는 친구 내기 앱",
+  "short_name": "쫄?",
   "description": "광고 없이 3초 만에 시작하는 화려한 모바일 내기 게임 (손가락 뽑기, 제비뽑기)",
   "start_url": "/",
   "display": "standalone",

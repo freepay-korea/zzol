@@ -1,6 +1,6 @@
 export const strings = {
   app: {
-    title: '쫄!',
+    title: '쫄?',
     subtitle: '광고 없는 3초 친구 내기',
     tagline: '술자리 · 밥값 내기 · 순서 정하기',
     heroDescription: '폰 한 대로 3초 만에 승부',
@@ -66,7 +66,7 @@ export const strings = {
     soundDesc: '카운트다운 및 결과 효과음',
     haptic: '진동 피드백',
     hapticDesc: '터치 및 당첨 순간 햅틱',
-    version: '쫄! v1.0.0 (광고 없음)',
+    version: '쫄? v1.0.0 (광고 없음)',
     subinfo: '모바일 최적화',
     confirm: '확인',
   },

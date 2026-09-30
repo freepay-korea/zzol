@@ -34,7 +34,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
   const handleShareApp = async () => {
     haptics.trigger('selection');
     const shareData = {
-      title: '쫄! - 광고 없는 친구 내기 앱',
+      title: '쫄? - 광고 없는 친구 내기 앱',
       text: '술자리, 밥값 내기, 순서 정하기! 폰 하나로 3초 만에 시작하는 화려한 터치 내기 게임',
       url: window.location.href,
     };
@@ -168,7 +168,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
           <div className="flex items-center justify-between text-xs text-slate-400">
             <div className="flex items-center gap-1.5">
               <Info className="w-3.5 h-3.5 text-slate-500" />
-              <span>쫄! v1.0.0 (광고 없음)</span>
+              <span>쫄? v1.0.0 (광고 없음)</span>
             </div>
             <span className="text-emerald-400 font-medium">PWA & GitHub 연동 지원</span>
           </div>

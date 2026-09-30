@@ -50,7 +50,7 @@ export default function App() {
               </div>
               <div>
                 <h1 className="text-xl font-black font-display tracking-tight text-white flex items-center gap-1.5">
-                  쫄! <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-white/10 text-cyan-300">NO ADS</span>
+                  쫄? <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-white/10 text-cyan-300">NO ADS</span>
                 </h1>
               </div>
             </div>
