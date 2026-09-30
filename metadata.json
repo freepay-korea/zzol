@@ -1,0 +1,6 @@
+{
+  "name": "한판 - 광고 없는 친구 내기 앱",
+  "description": "광고 없이 3초 만에 시작하는 화려한 모바일 모임·술자리 내기 게임 (손가락 뽑기, 제비뽑기)",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

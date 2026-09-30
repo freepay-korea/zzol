@@ -1,0 +1,15 @@
+{
+  "appId": "com.zzol.app",
+  "appName": "쫄!",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1500,
+      "backgroundColor": "#090a10"
+    }
+  }
+}
