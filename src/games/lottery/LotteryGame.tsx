@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowLeft, Users, AlertTriangle, Play, RotateCcw, Sliders, CheckCircle2, XCircle } from 'lucide-react';
 import { sounds } from '../../effects/sound';
@@ -25,6 +25,13 @@ interface SavedSettings {
 }
 
 const DEFAULT_PENALTIES = ['커피 쏘기 ☕', '술 한 잔 원샷 🍻', '밥값 결제 💳', '노래 한 곡 🎤', '설거지 당첨 🧼'];
+
+const getPenaltyFontSize = (text: string) => {
+  if (text.length <= 5) return 'text-xs sm:text-sm font-black';
+  if (text.length <= 9) return 'text-[11px] sm:text-xs font-black';
+  if (text.length <= 14) return 'text-[10px] sm:text-[11px] font-extrabold';
+  return 'text-[9.5px] sm:text-[10.5px] font-bold leading-tight';
+};
 
 export const LotteryGame: React.FC<LotteryGameProps> = ({ onBack }) => {
   // Screen Wake Lock
@@ -80,6 +87,7 @@ export const LotteryGame: React.FC<LotteryGameProps> = ({ onBack }) => {
   const [cards, setCards] = useState<CardItem[]>([]);
   const [screenShaking, setScreenShaking] = useState(false);
   const [redFlash, setRedFlash] = useState(false);
+  const [flippedFailCard, setFlippedFailCard] = useState<CardItem | null>(null);
 
   const handleBack = () => {
     haptics.trigger('light');
@@ -111,6 +119,7 @@ export const LotteryGame: React.FC<LotteryGameProps> = ({ onBack }) => {
   const startGame = () => {
     sounds.playButton();
     haptics.trigger('selection');
+    setFlippedFailCard(null);
     saveSettings(playerCount, failCount, customPenalties);
 
     // Create cards with cryptographically secure random distribution
@@ -175,17 +184,23 @@ export const LotteryGame: React.FC<LotteryGameProps> = ({ onBack }) => {
       setCards(updatedCards);
 
       if (card.isFail) {
-        // Red flash & Screen Shake
+        // Red flash & Screen Shake & Big Popup Announcement
         sounds.playFail();
         haptics.trigger('error');
         setScreenShaking(true);
         setRedFlash(true);
+        setFlippedFailCard(card);
         triggerFireworks();
 
         setTimeout(() => {
           setScreenShaking(false);
           setRedFlash(false);
         }, 800);
+
+        // Auto hide popup after 2.8s
+        setTimeout(() => {
+          setFlippedFailCard((cur) => (cur?.id === card.id ? null : cur));
+        }, 2800);
       } else {
         // Safe pass
         sounds.playPass();
@@ -199,7 +214,7 @@ export const LotteryGame: React.FC<LotteryGameProps> = ({ onBack }) => {
       if (remainingUnflipped.length === 0 || remainingFails.length === 0) {
         setTimeout(() => {
           setGameState('summary');
-        }, 1500);
+        }, 1800);
       }
     }, 800);
   };
@@ -232,6 +247,30 @@ export const LotteryGame: React.FC<LotteryGameProps> = ({ onBack }) => {
             exit={{ opacity: 0 }}
             className="absolute inset-0 bg-red-600 z-50 pointer-events-none"
           />
+        )}
+      </AnimatePresence>
+
+      {/* Dramatic Full Penalty Announcement Banner on Flip */}
+      <AnimatePresence>
+        {flippedFailCard && (
+          <motion.div
+            initial={{ scale: 0.85, opacity: 0, y: -20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.85, opacity: 0, y: -20 }}
+            onClick={() => setFlippedFailCard(null)}
+            className="fixed inset-x-4 top-16 z-50 max-w-sm mx-auto p-4 rounded-3xl bg-gradient-to-b from-rose-900 to-rose-950 border-2 border-rose-400 shadow-[0_0_35px_rgba(244,63,94,0.5)] backdrop-blur-xl text-center cursor-pointer"
+          >
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500 text-white text-[11px] font-black uppercase tracking-wider mb-2">
+              <AlertTriangle className="w-3.5 h-3.5 fill-white text-rose-500" />
+              <span>{flippedFailCard.id + 1}번 카드 당첨 (꽝)!</span>
+            </div>
+            <div className="text-xl sm:text-2xl font-black text-white font-display break-keep break-words py-1 leading-snug drop-shadow-md">
+              "{flippedFailCard.penaltyText}"
+            </div>
+            <p className="text-[11px] text-rose-200/80 mt-1">
+              (터치하면 바로 닫힙니다)
+            </p>
+          </motion.div>
         )}
       </AnimatePresence>
 
@@ -391,7 +430,7 @@ export const LotteryGame: React.FC<LotteryGameProps> = ({ onBack }) => {
                   value={newPenaltyInput}
                   onChange={(e) => setNewPenaltyInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && addPenalty()}
-                  placeholder="예: 편의점 아이스크림 쏘기"
+                  placeholder="예: 술 한 잔 원샷, 아이스크림 쏘기"
                   className="flex-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400"
                 />
                 <button
@@ -418,7 +457,7 @@ export const LotteryGame: React.FC<LotteryGameProps> = ({ onBack }) => {
         {gameState === 'playing' && (
           <div className="w-full h-full flex flex-col justify-between py-2">
             {/* Status bar */}
-            <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-xs mb-3">
+            <div className="flex items-center justify-between px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 text-xs mb-3">
               <span className="text-slate-300">
                 남은 카드 <strong className="text-amber-400">{remainingCards}장</strong>
               </span>
@@ -445,7 +484,7 @@ export const LotteryGame: React.FC<LotteryGameProps> = ({ onBack }) => {
                 <div
                   key={card.id}
                   onClick={() => handleCardClick(card.id)}
-                  className={`perspective-1000 aspect-[3/4] w-full min-h-[90px] relative cursor-pointer select-none ${
+                  className={`perspective-1000 aspect-[3/4] w-full min-h-[100px] relative cursor-pointer select-none ${
                     card.isShaking ? 'animate-[shake_0.15s_ease-in-out_infinite]' : ''
                   }`}
                 >
@@ -472,30 +511,49 @@ export const LotteryGame: React.FC<LotteryGameProps> = ({ onBack }) => {
 
                     {/* CARD FRONT (Flipped) */}
                     <div
-                      className={`absolute inset-0 w-full h-full backface-hidden rotate-y-180 rounded-2xl border-2 flex flex-col items-center justify-center p-2.5 text-center shadow-xl ${
+                      className={`absolute inset-0 w-full h-full backface-hidden rotate-y-180 rounded-2xl border-2 flex flex-col items-center justify-between p-2 text-center shadow-xl overflow-hidden ${
                         card.isFail
-                          ? 'border-rose-500 bg-gradient-to-b from-rose-950 to-rose-900/80 text-white neon-glow-rose'
+                          ? 'border-rose-500 bg-gradient-to-b from-rose-950 via-rose-900 to-[#1d0b11] text-white neon-glow-rose'
                           : 'border-emerald-500/40 bg-gradient-to-b from-emerald-950/60 to-[#0e1713] text-emerald-300'
                       }`}
                     >
                       {card.isFail ? (
                         <>
-                          <XCircle className="w-7 h-7 text-rose-400 mb-1 animate-bounce" />
-                          <span className="text-xs font-black text-rose-300 uppercase tracking-wider">
-                            당첨 (꽝)!
+                          <div className="w-full flex items-center justify-center gap-1 text-[10px] sm:text-[11px] font-black text-rose-300 uppercase tracking-wider py-0.5 px-1.5 rounded-full bg-rose-500/25">
+                            <XCircle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                            <span>꽝 당첨!</span>
+                          </div>
+
+                          {/* Full Penalty Text: No line-clamp, break-keep, dynamic font sizing */}
+                          <div className="flex-1 w-full flex items-center justify-center px-0.5 my-1">
+                            <p
+                              className={`text-white text-center leading-snug break-keep break-words hyphens-auto w-full ${getPenaltyFontSize(
+                                card.penaltyText || ''
+                              )}`}
+                            >
+                              {card.penaltyText || '꽝!'}
+                            </p>
+                          </div>
+
+                          <span className="text-[9.5px] text-rose-400/90 font-medium">
+                            벌칙 수행!
                           </span>
-                          <p className="text-[11px] font-bold text-white mt-1 leading-tight line-clamp-2">
-                            {card.penaltyText}
-                          </p>
                         </>
                       ) : (
                         <>
-                          <CheckCircle2 className="w-7 h-7 text-emerald-400 mb-1" />
-                          <span className="text-xs font-bold text-emerald-300">
-                            통과!
-                          </span>
-                          <span className="text-[10px] text-slate-400 mt-1">
-                            생존 완료
+                          <div className="w-full flex items-center justify-center gap-1 text-[10px] sm:text-[11px] font-bold text-emerald-300 py-0.5 px-1.5 rounded-full bg-emerald-500/25">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                            <span>통과!</span>
+                          </div>
+
+                          <div className="flex-1 w-full flex items-center justify-center px-1 my-1">
+                            <p className="text-xs sm:text-sm font-black text-emerald-200 text-center">
+                              생존 🎉
+                            </p>
+                          </div>
+
+                          <span className="text-[9.5px] text-slate-400 font-medium">
+                            안전 통과
                           </span>
                         </>
                       )}
@@ -527,25 +585,25 @@ export const LotteryGame: React.FC<LotteryGameProps> = ({ onBack }) => {
               </p>
             </div>
 
-            {/* Fails summary list */}
-            <div className="space-y-2 py-2 max-h-48 overflow-y-auto">
+            {/* Fails summary list: completely untruncated with full word-break */}
+            <div className="space-y-2 py-2 max-h-56 overflow-y-auto">
               {cards
                 .filter((c) => c.isFail)
                 .map((c, i) => (
                   <div
                     key={c.id}
-                    className="flex items-center justify-between p-3 rounded-2xl bg-rose-950/40 border border-rose-500/30 text-left"
+                    className="flex items-center justify-between p-3 rounded-2xl bg-rose-950/40 border border-rose-500/30 text-left gap-2"
                   >
-                    <div className="flex items-center gap-2">
-                      <span className="w-6 h-6 rounded-full bg-rose-500 text-white font-black text-xs flex items-center justify-center">
+                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                      <span className="w-6 h-6 rounded-full bg-rose-500 text-white font-black text-xs flex items-center justify-center shrink-0">
                         {i + 1}
                       </span>
-                      <span className="text-xs font-semibold text-rose-200">
+                      <span className="text-xs sm:text-sm font-bold text-rose-100 break-keep break-words flex-1 leading-snug">
                         {c.penaltyText || '꽝!'}
                       </span>
                     </div>
-                    <span className="text-[11px] text-rose-400 font-bold">
-                      벌칙 당첨
+                    <span className="text-[11px] text-rose-400 font-extrabold shrink-0 px-2 py-0.5 rounded-full bg-rose-500/20">
+                      벌칙
                     </span>
                   </div>
                 ))}

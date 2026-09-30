@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { FingerPoint, FingerGameState } from './useFingerGame';
 
 interface FingerCanvasProps {
@@ -24,29 +24,26 @@ export const FingerCanvas: React.FC<FingerCanvasProps> = ({
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const particlesRef = useRef<Particle[]>([]);
-  const animFrameRef = useRef<number | null>(null);
   const prevGameStateRef = useRef<FingerGameState>(gameState);
 
-  // Trigger explosion particles when transitioning into 'result'
+  // Trigger celebration explosion on winning
   useEffect(() => {
     if (prevGameStateRef.current !== 'result' && gameState === 'result') {
       const winners = fingers.filter((f) => f.isWinner);
-      const targets = winners.length > 0 ? winners : fingers;
-
-      targets.forEach((target) => {
-        const count = 45;
-        for (let i = 0; i < count; i++) {
-          const angle = (Math.PI * 2 * i) / count + Math.random() * 0.2;
+      winners.forEach((winner) => {
+        // Spawn 45 neon particles per winner
+        for (let i = 0; i < 45; i++) {
+          const angle = Math.random() * Math.PI * 2;
           const speed = Math.random() * 8 + 3;
           particlesRef.current.push({
-            x: target.x,
-            y: target.y,
+            x: winner.x,
+            y: winner.y,
             vx: Math.cos(angle) * speed,
             vy: Math.sin(angle) * speed,
-            color: target.color,
-            size: Math.random() * 6 + 3,
+            color: winner.color,
+            size: Math.random() * 5 + 3,
             alpha: 1,
-            decay: Math.random() * 0.02 + 0.015,
+            decay: Math.random() * 0.015 + 0.01,
           });
         }
       });
@@ -57,15 +54,16 @@ export const FingerCanvas: React.FC<FingerCanvasProps> = ({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    let dpr = window.devicePixelRatio || 1;
+    let animationFrameId: number;
     let width = 0;
     let height = 0;
+    let dpr = 1;
 
     const resize = () => {
-      if (!canvas) return;
       const rect = canvas.getBoundingClientRect();
       width = rect.width;
       height = rect.height;
@@ -97,7 +95,7 @@ export const FingerCanvas: React.FC<FingerCanvasProps> = ({
         // Pulse speed depends on state
         const pulseSpeed = gameState === 'countdown' ? 9 : gameState === 'stabilizing' ? 6 : 3;
         const pulse = Math.sin(elapsed * pulseSpeed) * 6;
-        const baseRadius = isWinner && gameState === 'result' ? 58 : 42;
+        const baseRadius = isWinner && gameState === 'result' ? 56 : 42;
         const outerRadius = Math.max(20, baseRadius + pulse);
 
         // 1. Ambient Glow Field
@@ -112,7 +110,20 @@ export const FingerCanvas: React.FC<FingerCanvasProps> = ({
         ctx.arc(x, y, outerRadius * 1.6, 0, Math.PI * 2);
         ctx.fill();
 
-        // 2. Outer Neon Breathing Ring
+        // 2. Continuous Expanding Shockwave Wave for Winner
+        if (gameState === 'result' && isWinner) {
+          const waveRadius = ((elapsed * 50) % 60) + outerRadius;
+          const waveAlpha = Math.max(0, 1 - (waveRadius - outerRadius) / 60);
+          ctx.beginPath();
+          ctx.arc(x, y, waveRadius, 0, Math.PI * 2);
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 2.5;
+          ctx.globalAlpha = waveAlpha;
+          ctx.stroke();
+          ctx.globalAlpha = 1.0;
+        }
+
+        // 3. Outer Neon Breathing Ring
         ctx.beginPath();
         ctx.arc(x, y, outerRadius, 0, Math.PI * 2);
         ctx.strokeStyle = color;
@@ -121,7 +132,7 @@ export const FingerCanvas: React.FC<FingerCanvasProps> = ({
         ctx.shadowBlur = 18;
         ctx.stroke();
 
-        // 3. Inner Center Core
+        // 4. Inner Center Core
         ctx.beginPath();
         ctx.arc(x, y, 16, 0, Math.PI * 2);
         ctx.fillStyle = '#ffffff';
@@ -129,14 +140,23 @@ export const FingerCanvas: React.FC<FingerCanvasProps> = ({
         ctx.shadowBlur = 12;
         ctx.fill();
 
-        // 4. Team Badge if in Teams mode
-        if (finger.teamIndex !== undefined) {
-          ctx.font = 'bold 15px Pretendard, sans-serif';
-          ctx.fillStyle = '#ffffff';
-          ctx.textAlign = 'center';
-          ctx.shadowBlur = 8;
-          ctx.shadowColor = '#000000';
-          ctx.fillText(`${finger.teamIndex + 1}팀`, x, y - outerRadius - 14);
+        // 5. Winner Badge Text directly on the finger ring
+        if (gameState === 'result' && isWinner) {
+          if (finger.teamIndex !== undefined) {
+            ctx.font = 'bold 16px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#000000';
+            ctx.fillText(`${finger.teamIndex + 1}팀`, x, y - outerRadius - 16);
+          } else {
+            ctx.font = 'bold 16px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.shadowBlur = 12;
+            ctx.shadowColor = color;
+            ctx.fillText('👑 당첨!', x, y - outerRadius - 16);
+          }
         }
 
         ctx.restore();
@@ -164,9 +184,8 @@ export const FingerCanvas: React.FC<FingerCanvasProps> = ({
         p.x += p.vx;
         p.y += p.vy;
         p.alpha -= p.decay;
-        p.size = Math.max(0, p.size - 0.04);
 
-        if (p.alpha <= 0 || p.size <= 0) {
+        if (p.alpha <= 0) {
           particlesRef.current.splice(i, 1);
           continue;
         }
@@ -182,16 +201,14 @@ export const FingerCanvas: React.FC<FingerCanvasProps> = ({
         ctx.restore();
       }
 
-      animFrameRef.current = requestAnimationFrame(render);
+      animationFrameId = requestAnimationFrame(render);
     };
 
-    animFrameRef.current = requestAnimationFrame(render);
+    animationFrameId = requestAnimationFrame(render);
 
     return () => {
       window.removeEventListener('resize', resize);
-      if (animFrameRef.current) {
-        cancelAnimationFrame(animFrameRef.current);
-      }
+      cancelAnimationFrame(animationFrameId);
     };
   }, [fingers, gameState]);
 
