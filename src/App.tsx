@@ -39,9 +39,9 @@ export default function App() {
       )}
 
       {currentScreen === 'home' && (
-        <div className="relative z-10 flex flex-col h-full justify-between p-5 pb-8 safe-area-inset">
+        <div className="relative z-10 flex flex-col h-full justify-between px-5 pt-[max(env(safe-area-inset-top),1rem)] pb-[max(env(safe-area-inset-bottom),1.5rem)]">
           {/* Top Bar */}
-          <header className="flex items-center justify-between pt-2">
+          <header className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-500 to-amber-500 p-[1.5px] flex items-center justify-center shadow-lg shadow-cyan-500/20">
                 <div className="w-full h-full bg-[#090a10] rounded-[10px] flex items-center justify-center">

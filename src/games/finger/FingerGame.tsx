@@ -69,7 +69,7 @@ export const FingerGame: React.FC<FingerGameProps> = ({ onBack }) => {
       <div className="relative z-30">
         {/* Top Header Bar */}
         <header
-          className="interactive-zone flex items-center justify-between p-3.5 bg-[#090a10]/90 backdrop-blur-md border-b border-white/5"
+          className="interactive-zone flex items-center justify-between px-3.5 pb-2.5 pt-[max(env(safe-area-inset-top),0.875rem)] bg-[#090a10]/90 backdrop-blur-md border-b border-white/5"
           onClick={(e) => e.stopPropagation()}
           onTouchStart={(e) => e.stopPropagation()}
         >
@@ -242,7 +242,7 @@ export const FingerGame: React.FC<FingerGameProps> = ({ onBack }) => {
       </div>
 
       {/* Bottom Area */}
-      <div className="relative z-30 pb-4 px-4">
+      <div className="relative z-30 pb-[max(env(safe-area-inset-bottom),1rem)] px-4">
         {/* Result Action Dock: Neatly positioned at bottom so it NEVER covers any fingers in the center */}
         {gameState === 'result' ? (
           <div

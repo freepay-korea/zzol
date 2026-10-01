@@ -275,7 +275,7 @@ export const LotteryGame: React.FC<LotteryGameProps> = ({ onBack }) => {
       </AnimatePresence>
 
       {/* Top Header */}
-      <header className="relative z-30 flex items-center justify-between p-3.5 bg-[#090a10]/85 backdrop-blur-md border-b border-white/5">
+      <header className="relative z-30 flex items-center justify-between px-3.5 pb-2.5 pt-[max(env(safe-area-inset-top),0.875rem)] bg-[#090a10]/85 backdrop-blur-md border-b border-white/5">
         <button
           onClick={handleBack}
           className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-slate-200 text-xs font-semibold hover:bg-white/10 active:scale-95 transition-all"
@@ -564,7 +564,7 @@ export const LotteryGame: React.FC<LotteryGameProps> = ({ onBack }) => {
             </div>
 
             {/* Instruction Footer */}
-            <p className="text-center text-xs text-slate-400 py-1">
+            <p className="text-center text-xs text-slate-400 py-1 pb-[max(env(safe-area-inset-bottom),0.5rem)]">
               폰을 돌려 가며 각자 카드를 하나씩 탭하세요
             </p>
           </div>

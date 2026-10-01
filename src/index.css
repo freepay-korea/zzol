@@ -27,6 +27,23 @@
   font-family: 'Outfit', 'Pretendard', sans-serif;
 }
 
+/* Safe Area Inset Helpers for notch and Android navigation bar */
+.pt-safe {
+  padding-top: max(env(safe-area-inset-top, 0px), 12px);
+}
+
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
+}
+
+.pl-safe {
+  padding-left: max(env(safe-area-inset-left, 0px), 12px);
+}
+
+.pr-safe {
+  padding-right: max(env(safe-area-inset-right, 0px), 12px);
+}
+
 /* Neon glow helper utilities */
 .neon-glow-cyan {
   box-shadow: 0 0 25px rgba(6, 182, 212, 0.45), inset 0 0 15px rgba(6, 182, 212, 0.2);
