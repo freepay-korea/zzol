@@ -1,17 +1,32 @@
 {
+  "id": "/",
   "name": "쫄? - 광고 없는 친구 내기 앱",
   "short_name": "쫄?",
   "description": "광고 없이 3초 만에 시작하는 화려한 모바일 내기 게임 (손가락 뽑기, 제비뽑기)",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#090a10",
   "theme_color": "#090a10",
+  "categories": ["games", "entertainment"],
   "icons": [
     {
       "src": "/icon.svg",
       "sizes": "192x192 512x512",
       "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]
