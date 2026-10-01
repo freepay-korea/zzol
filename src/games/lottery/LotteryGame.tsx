@@ -24,7 +24,7 @@ interface SavedSettings {
   penalties: string[];
 }
 
-const DEFAULT_PENALTIES = ['커피 쏘기 ☕', '술 한 잔 원샷 🍻', '밥값 결제 💳', '노래 한 곡 🎤', '설거지 당첨 🧼'];
+const DEFAULT_PENALTIES = ['커피 쏘기 ☕', '아이스크림 쏘기 🍦', '밥값 결제 💳', '노래 한 곡 🎤', '설거지 당첨 🧼'];
 
 const getPenaltyFontSize = (text: string) => {
   if (text.length <= 5) return 'text-xs sm:text-sm font-black';
@@ -74,7 +74,12 @@ export const LotteryGame: React.FC<LotteryGameProps> = ({ onBack }) => {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        return parsed.penalties || DEFAULT_PENALTIES;
+        if (Array.isArray(parsed.penalties)) {
+          return parsed.penalties.map((p: string) =>
+            p.includes('술') ? '아이스크림 쏘기 🍦' : p
+          );
+        }
+        return DEFAULT_PENALTIES;
       } catch {
         return DEFAULT_PENALTIES;
       }
@@ -430,7 +435,7 @@ export const LotteryGame: React.FC<LotteryGameProps> = ({ onBack }) => {
                   value={newPenaltyInput}
                   onChange={(e) => setNewPenaltyInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && addPenalty()}
-                  placeholder="예: 술 한 잔 원샷, 아이스크림 쏘기"
+                  placeholder="예: 간식 쏘기, 아이스크림 쏘기, 심부름"
                   className="flex-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400"
                 />
                 <button

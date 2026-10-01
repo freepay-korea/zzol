@@ -2,7 +2,7 @@ export const strings = {
   app: {
     title: '쫄?',
     subtitle: '광고 없는 3초 친구 내기',
-    tagline: '술자리 · 밥값 내기 · 순서 정하기',
+    tagline: '친구 모임 · 간식 내기 · 순서 정하기',
     heroDescription: '폰 한 대로 3초 만에 승부',
     noAds: 'NO ADS',
     trustNotice: '완전 무료 · 광고 없음 · 로그인 불필요',

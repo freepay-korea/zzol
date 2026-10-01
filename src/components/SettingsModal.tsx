@@ -35,7 +35,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     haptics.trigger('selection');
     const shareData = {
       title: '쫄? - 광고 없는 친구 내기 앱',
-      text: '술자리, 밥값 내기, 순서 정하기! 폰 하나로 3초 만에 시작하는 화려한 터치 내기 게임',
+      text: '친구 모임, 밥값 내기, 순서 정하기! 폰 하나로 3초 만에 시작하는 화려한 터치 내기 게임',
       url: window.location.href,
     };
 

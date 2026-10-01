@@ -69,7 +69,7 @@ export default function App() {
             <div className="space-y-1 text-center mb-6">
               <p className="text-xs uppercase tracking-widest text-cyan-400 font-semibold flex items-center justify-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5" />
-                술자리 · 밥값 내기 · 순서 정하기
+                친구 모임 · 간식 내기 · 순서 정하기
               </p>
               <h2 className="text-3xl font-extrabold text-white font-display tracking-tight text-balance">
                 폰 한 대로 <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-teal-300 to-amber-300">3초 만에 승부</span>
