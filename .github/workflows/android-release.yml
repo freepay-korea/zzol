@@ -1,0 +1,82 @@
+name: Android Release (AAB)
+
+# GitHub 저장소 > Actions > "Android Release (AAB)" > Run workflow 로 실행
+# 결과물: 서명된 app-release.aab (Actions 실행 화면 하단 Artifacts에서 다운로드)
+on:
+  workflow_dispatch:
+    inputs:
+      version_name:
+        description: '버전 이름 (예: 1.0.0)'
+        required: true
+        default: '1.0.0'
+      version_code:
+        description: '버전 코드 (정수, 업로드할 때마다 이전보다 커야 함. 비우면 실행 번호 사용)'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  build-aab:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps --ignore-scripts
+
+      - name: Build web & sync Capacitor
+        run: npm run android:sync
+
+      - name: Restore upload keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "::error::ANDROID_KEYSTORE_BASE64 시크릿이 없습니다. README의 '서명 키 등록' 절차를 먼저 진행하세요."
+            exit 1
+          fi
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/upload-keystore.jks
+          cat > android/keystore.properties <<PROPS
+          storeFile=upload-keystore.jks
+          storePassword=$ANDROID_KEYSTORE_PASSWORD
+          keyAlias=$ANDROID_KEY_ALIAS
+          keyPassword=$ANDROID_KEY_PASSWORD
+          PROPS
+
+      - name: Build signed AAB
+        working-directory: android
+        run: |
+          VERSION_CODE="${{ inputs.version_code }}"
+          [ -z "$VERSION_CODE" ] && VERSION_CODE="${{ github.run_number }}"
+          chmod +x gradlew
+          ./gradlew bundleRelease --no-daemon \
+            -PversionCode="$VERSION_CODE" \
+            -PversionName="${{ inputs.version_name }}"
+
+      - name: Verify signature
+        run: jarsigner -verify android/app/build/outputs/bundle/release/app-release.aab | tail -1
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: zzol-${{ inputs.version_name }}-aab
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+
+      - name: Clean up secrets
+        if: always()
+        run: rm -f android/upload-keystore.jks android/keystore.properties

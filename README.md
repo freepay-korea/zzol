@@ -24,7 +24,45 @@
 
 ## 🛍️ 구글 플레이스토어(Google Play Console) 출시 가이드
 
-본 프로젝트는 **구글 플레이스토어 출시 기준(Target SDK 34, Android App Bundle .aab, PWA TWA 규격)**에 맞춰 완벽히 세팅되어 있습니다. 다음 2가지 방법 중 편한 방법을 선택하세요.
+본 프로젝트는 **구글 플레이스토어 출시 기준(Target SDK 36, Android App Bundle .aab, PWA TWA 규격)**에 맞춰 완벽히 세팅되어 있습니다. 다음 2가지 방법 중 편한 방법을 선택하세요.
+
+### 방법 0: GitHub Actions로 서명된 .aab 자동 빌드 (가장 추천 ⭐️ - PC에 아무것도 설치 불필요)
+
+`.github/workflows/android-release.yml` 워크플로가 Capacitor 네이티브 앱을 빌드하고 서명된 `.aab`를 만들어 줍니다.
+스토어 등록 문구·스크린샷·그래픽 이미지는 [`store/`](store/LISTING.md) 폴더에 준비되어 있습니다.
+
+#### ① 업로드 키 만들기 (최초 1회)
+Java가 설치된 PC에서 실행합니다. 비밀번호는 반드시 따로 보관하세요.
+```bash
+keytool -genkeypair -v -keystore upload-keystore.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000
+```
+```bash
+base64 -w0 upload-keystore.jks > keystore.b64   # macOS: base64 -i upload-keystore.jks -o keystore.b64
+```
+> ⚠️ `upload-keystore.jks`는 저장소에 커밋하지 말고 안전한 곳에 백업하세요. (Play 앱 서명을 사용하면 분실 시 Play Console에서 업로드 키 재설정 요청이 가능합니다.)
+
+#### ② GitHub 시크릿 등록
+저장소 **Settings → Secrets and variables → Actions → New repository secret**
+
+| 이름 | 값 |
+|---|---|
+| `ANDROID_KEYSTORE_BASE64` | `keystore.b64` 파일 내용 전체 |
+| `ANDROID_KEYSTORE_PASSWORD` | 키스토어 비밀번호 |
+| `ANDROID_KEY_ALIAS` | `upload` |
+| `ANDROID_KEY_PASSWORD` | 키 비밀번호 (보통 키스토어 비밀번호와 동일) |
+
+#### ③ 빌드 실행
+**Actions → Android Release (AAB) → Run workflow** → 버전 이름(예: `1.0.0`) 입력 후 실행.
+완료되면 실행 화면 하단 **Artifacts**에서 `app-release.aab`를 내려받습니다.
+업데이트를 올릴 때마다 버전 코드는 이전보다 커야 합니다 (비워두면 실행 번호가 자동 사용됨).
+
+#### ④ Play Console 업로드
+1. [Play Console](https://play.google.com/console)에서 앱 만들기 → 앱 이름 `쫄?`, 게임, 무료
+2. [`store/LISTING.md`](store/LISTING.md)를 보고 스토어 등록정보·앱 콘텐츠(개인정보처리방침, 콘텐츠 등급, 데이터 보안 등) 작성
+3. **테스트 및 출시**에서 `.aab` 업로드 (Play 앱 서명 사용 동의)
+4. **2023년 11월 이후 만든 개인 개발자 계정**은 프로덕션 출시 전에 **비공개 테스트에 12명 이상이 14일 이상 참여**해야 합니다. 비공개 테스트 트랙에 먼저 올려 테스터를 모으세요.
+
+---
 
 ### 방법 1: PWABuilder 사용 (추천 ⭐️ - 안드로이드 스튜디오 설치 불필요, 3분 완성)
 
