@@ -31,15 +31,13 @@
 `.github/workflows/android-release.yml` 워크플로가 Capacitor 네이티브 앱을 빌드하고 서명된 `.aab`를 만들어 줍니다.
 스토어 등록 문구·스크린샷·그래픽 이미지는 [`store/`](store/LISTING.md) 폴더에 준비되어 있습니다.
 
-#### ① 업로드 키 만들기 (최초 1회)
-Java가 설치된 PC에서 실행합니다. 비밀번호는 반드시 따로 보관하세요.
+#### ① 업로드 키 준비
+이미 Play Console에 v1.0.0을 올릴 때 쓴 **`zzol-upload.jks` (alias `zzol-upload`)** 가 등록된 업로드 키입니다. **새로 만들지 말고 이 파일을 그대로 사용하세요.** (다른 키로 서명하면 Play Console이 업로드를 거부합니다.)
 ```bash
-keytool -genkeypair -v -keystore upload-keystore.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000
+base64 -w0 zzol-upload.jks > keystore.b64   # macOS: base64 -i zzol-upload.jks -o keystore.b64
+# Windows PowerShell: [Convert]::ToBase64String([IO.File]::ReadAllBytes("zzol-upload.jks")) | Set-Content keystore.b64
 ```
-```bash
-base64 -w0 upload-keystore.jks > keystore.b64   # macOS: base64 -i upload-keystore.jks -o keystore.b64
-```
-> ⚠️ `upload-keystore.jks`는 저장소에 커밋하지 말고 안전한 곳에 백업하세요. (Play 앱 서명을 사용하면 분실 시 Play Console에서 업로드 키 재설정 요청이 가능합니다.)
+> ⚠️ 키 파일은 저장소에 커밋하지 말고 안전한 곳에 백업하세요.
 
 #### ② GitHub 시크릿 등록
 저장소 **Settings → Secrets and variables → Actions → New repository secret**
@@ -48,13 +46,13 @@ base64 -w0 upload-keystore.jks > keystore.b64   # macOS: base64 -i upload-keysto
 |---|---|
 | `ANDROID_KEYSTORE_BASE64` | `keystore.b64` 파일 내용 전체 |
 | `ANDROID_KEYSTORE_PASSWORD` | 키스토어 비밀번호 |
-| `ANDROID_KEY_ALIAS` | `upload` |
+| `ANDROID_KEY_ALIAS` | `zzol-upload` |
 | `ANDROID_KEY_PASSWORD` | 키 비밀번호 (보통 키스토어 비밀번호와 동일) |
 
 #### ③ 빌드 실행
 **Actions → Android Release (AAB) → Run workflow** → 버전 이름(예: `1.0.0`) 입력 후 실행.
 완료되면 실행 화면 하단 **Artifacts**에서 `app-release.aab`를 내려받습니다.
-업데이트를 올릴 때마다 버전 코드는 이전보다 커야 합니다 (비워두면 실행 번호가 자동 사용됨).
+버전 코드는 Play Console에 올린 적 있는 값보다 커야 합니다 (v1.0.0 = 1은 이미 업로드됨 → 다음은 2).
 
 #### ④ Play Console 업로드
 1. [Play Console](https://play.google.com/console)에서 앱 만들기 → 앱 이름 `쫄?`, 게임, 무료

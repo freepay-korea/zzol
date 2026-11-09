@@ -10,9 +10,9 @@ on:
         required: true
         default: '1.0.0'
       version_code:
-        description: '버전 코드 (정수, 업로드할 때마다 이전보다 커야 함. 비우면 실행 번호 사용)'
-        required: false
-        default: ''
+        description: '버전 코드 (정수, Play Console에 올린 적 있는 값보다 커야 함. v1.0.0=1은 이미 업로드됨)'
+        required: true
+        default: '2'
 
 permissions:
   contents: read
@@ -62,7 +62,6 @@ jobs:
         working-directory: android
         run: |
           VERSION_CODE="${{ inputs.version_code }}"
-          [ -z "$VERSION_CODE" ] && VERSION_CODE="${{ github.run_number }}"
           chmod +x gradlew
           ./gradlew bundleRelease --no-daemon \
             -PversionCode="$VERSION_CODE" \
